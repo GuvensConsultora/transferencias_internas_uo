@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+  <record id="view_cash_transfer_tree" model="ir.ui.view">
+    <field name="name">cash.transfer.tree</field>
+    <field name="model">cash.transfer</field>
+    <field name="arch" type="xml">
+      <tree>
+        <field name="date"/>
+        <field name="company_id"/>
+        <field name="journal_id_from"/>
+        <field name="journal_id_to"/>
+        <field name="amount"/>
+        <field name="state"/>
+      </tree>
+    </field>
+  </record>
+
+  <record id="view_cash_transfer_form" model="ir.ui.view">
+    <field name="name">cash.transfer.form</field>
+    <field name="model">cash.transfer</field>
+    <field name="arch" type="xml">
+      <form string="Transferencia de Efectivo">
+        <header>
+          <button name="action_validate" type="object" string="Validar" class="btn-primary oe_highlight"
+                  attrs="{'invisible': [('state','=','validated')]}"/>
+          <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+        </header>
+        <sheet>
+          <group>
+            <group>
+              <field name="date"/>
+              <field name="company_id" readonly="1"/>
+              <field name="currency_id"/>
+            </group>
+            <group>
+              <field name="journal_id_from"
+                     domain="['&', ('type','in',('cash','bank')),
+                                   ('company_id','in', context.get('allowed_company_ids', [user.company_id.id]))]"/>
+              <field name="journal_id_to"
+                     domain="['&', ('type','in',('cash','bank')),
+                                   ('company_id','in', context.get('allowed_company_ids', [user.company_id.id]))]"/>
+              <field name="amount"/>
+            </group>
+          </group>
+        </sheet>
+      </form>
+    </field>
+  </record>
+
+  <record id="action_cash_transfer" model="ir.actions.act_window">
+    <field name="name">Transferencias de Efectivo</field>
+    <field name="res_model">cash.transfer</field>
+    <field name="view_mode">tree,form</field>
+    <field name="context">{}</field>
+  </record>
+
+  <menuitem id="menu_cash_transfer_root" name="Transferencias"
+            parent="account.menu_finance" sequence="95"/>
+  <menuitem id="menu_cash_transfer" name="Transferencias de Efectivo"
+            parent="menu_cash_transfer_root" action="action_cash_transfer" sequence="10"/>
+</odoo>
