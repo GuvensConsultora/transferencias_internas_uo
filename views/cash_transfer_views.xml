@@ -58,8 +58,7 @@
     <field name="context">{}</field>
   </record>
 
-  <menuitem id="menu_cash_transfer_root" name="Transferencias"
-            parent="account.menu_finance" sequence="95"/>
+  <menuitem id="menu_cash_transfer_root" name="Transferencias"/>
   <menuitem id="menu_cash_transfer" name="Transferencias de Efectivo"
             parent="menu_cash_transfer_root" action="action_cash_transfer" sequence="10"/>
 </odoo>
