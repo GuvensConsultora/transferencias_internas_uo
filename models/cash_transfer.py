@@ -46,7 +46,7 @@ class CashTransfer(models.Model):
         if ou:
             # (supuesto) campo operating_unit_id en account.journal
             domain.append(('operating_unit_id', '=', ou.id))
-        return Journal.search(domain, limit=1, order='id asc')
+        return Journal.searh(domain, limit=1, order='id asc')
 
     @api.model
     def _get_central_cash_journal(self, company):
@@ -98,26 +98,26 @@ class CashTransfer(models.Model):
             rec.journal_id_from = rec._find_cash_journal_by_ou(rec.company_id, user_ou)
             rec.journal_id_to = rec._get_central_cash_journal(rec.company_id)
 
-    @api.onchange('journal_id_from')
-    def _onchange_from_enforce_ou(self):
-        """Si el usuario tiene OU, fuerza que el 'Desde' pertenezca a esa OU (si existe)."""
-        for rec in self:
-            user_ou = rec._get_user_default_ou()
-            if rec.company_id and user_ou:
-                if rec.journal_id_from and getattr(rec.journal_id_from, 'operating_unit_id', False) != user_ou:
-                    # Reajustar automáticamente al de la OU del usuario si hay uno
-                    j = rec._find_cash_journal_by_ou(rec.company_id, user_ou)
-                    if j:
-                        rec.journal_id_from = j
+    # @api.onchange('journal_id_from')
+    # def _onchange_from_enforce_ou(self):
+    #     """Si el usuario tiene OU, fuerza que el 'Desde' pertenezca a esa OU (si existe)."""
+    #     for rec in self:
+    #         user_ou = rec._get_user_default_ou()
+    #         if rec.company_id and user_ou:
+    #             if rec.journal_id_from and getattr(rec.journal_id_from, 'operating_unit_id', False) != user_ou:
+    #                 # Reajustar automáticamente al de la OU del usuario si hay uno
+    #                 j = rec._find_cash_journal_by_ou(rec.company_id, user_ou)
+    #                 if j:
+    #                     rec.journal_id_from = j
 
-    @api.onchange('journal_id_to')
-    def _onchange_to_enforce_central(self):
-        """Si existe diario Central, mantenerlo como destino."""
-        for rec in self:
-            if rec.company_id:
-                central = rec._get_central_cash_journal(rec.company_id)
-                if central:
-                    rec.journal_id_to = central
+    # @api.onchange('journal_id_to')
+    # def _onchange_to_enforce_central(self):
+    #     """Si existe diario Central, mantenerlo como destino."""
+    #     for rec in self:
+    #         if rec.company_id:
+    #             central = rec._get_central_cash_journal(rec.company_id)
+    #             if central:
+    #                 rec.journal_id_to = central
 
     # =========================
     #  LÓGICA EXISTENTE + GARANTÍA CENTRAL
