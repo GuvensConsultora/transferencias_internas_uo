@@ -46,7 +46,7 @@ class CashTransfer(models.Model):
         if ou:
             # (supuesto) campo operating_unit_id en account.journal
             domain.append(('operating_unit_id', '=', ou.id))
-        return Journal.searh(domain, limit=1, order='id asc')
+        return Journal.search(domain, limit=1, order='id asc')
 
     @api.model
     def _get_central_cash_journal(self, company):
