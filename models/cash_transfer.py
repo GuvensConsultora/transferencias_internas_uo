@@ -23,7 +23,7 @@ class CashTransfer(models.Model):
     amount = fields.Monetary(string='Importe', required=True)
     currency_id = fields.Many2one('res.currency', string='Moneda', required=True,
                                   default=lambda self: self.env.company.currency_id)
-    state = fields.Selection([('draft', 'Borrador'), ('validated', 'Validado')], default='draft', tracking=True)
+    state = fields.Selection([('draft', 'Borrador'), ('validated', 'Validado')], default='draft')
 
     # =========================
     #  AUTOCOMPLETADOS / DOMINIOS DINÁMICOS
