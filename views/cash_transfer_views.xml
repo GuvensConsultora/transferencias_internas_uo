@@ -91,11 +91,15 @@
     </field>
   </record>
 
-  <!-- ==================== MENÚ (bajo Contabilidad) ==================== -->
+  <!-- ==================== MENÚ (raíz) ==================== -->
+  <menuitem id="menu_cash_transfer_root"
+            name="Transferencias de Efectivo"
+            sequence="80"
+            web_icon="transferencias_internas_uo,static/description/icon.png"/>
   <menuitem id="menu_cash_transfer"
             name="Transferencias de Efectivo"
-            parent="account.menu_finance"
+            parent="menu_cash_transfer_root"
             action="action_cash_transfer"
-            sequence="35"/>
+            sequence="10"/>
 
 </odoo>
