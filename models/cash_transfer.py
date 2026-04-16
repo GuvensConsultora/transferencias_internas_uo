@@ -43,6 +43,33 @@ class CashTransfer(models.Model):
         'account.move', string='Asiento contable',
         readonly=True, copy=False,
     )
+    allowed_journal_from_ids = fields.Many2many(
+        'account.journal',
+        compute='_compute_allowed_journals',
+        string='Diarios de origen permitidos',
+    )
+    allowed_journal_to_ids = fields.Many2many(
+        'account.journal',
+        compute='_compute_allowed_journals',
+        string='Diarios de destino permitidos',
+    )
+
+    @api.depends('company_id')
+    def _compute_allowed_journals(self):
+        Journal = self.env['account.journal']
+        for rec in self:
+            company = rec.company_id or self.env.company
+            user_ou = rec._get_user_default_ou()
+            if user_ou:
+                from_domain = [
+                    ('type', '=', 'cash'),
+                    ('company_id', '=', company.id),
+                    ('operating_unit_id', '=', user_ou.id),
+                ]
+                rec.allowed_journal_from_ids = Journal.search(from_domain)
+            else:
+                rec.allowed_journal_from_ids = Journal.browse()
+            rec.allowed_journal_to_ids = rec._get_central_cash_journal(company)
 
     # ------------------------------------------------------------------
     #  Helpers Operating Unit
