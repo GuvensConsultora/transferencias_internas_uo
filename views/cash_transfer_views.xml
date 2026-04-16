@@ -1,64 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+
+  <!-- ==================== TREE ==================== -->
   <record id="view_cash_transfer_tree" model="ir.ui.view">
     <field name="name">cash.transfer.tree</field>
     <field name="model">cash.transfer</field>
     <field name="arch" type="xml">
-      <tree>
+      <tree decoration-muted="state == 'cancelled'"
+            decoration-success="state == 'validated'">
         <field name="date"/>
-        <field name="company_id"/>
         <field name="journal_id_from"/>
         <field name="journal_id_to"/>
         <field name="amount"/>
-        <field name="state"/>
+        <field name="currency_id" optional="hide"/>
+        <field name="state" widget="badge"
+               decoration-info="state == 'draft'"
+               decoration-success="state == 'validated'"
+               decoration-muted="state == 'cancelled'"/>
       </tree>
     </field>
   </record>
 
+  <!-- ==================== FORM ==================== -->
   <record id="view_cash_transfer_form" model="ir.ui.view">
     <field name="name">cash.transfer.form</field>
     <field name="model">cash.transfer</field>
     <field name="arch" type="xml">
       <form string="Transferencia de Efectivo">
         <header>
-	  <button name="action_validate"
-		  type="object"
-		  string="Validar"
-		  class="btn-primary oe_highlight"
-		  invisible="state == 'validated'"/>
-          <field name="state" widget="statusbar" statusbar_visible="draft,validated"/>
+          <button name="action_validate"
+                  type="object"
+                  string="Validar"
+                  class="btn-primary oe_highlight"
+                  invisible="state != 'draft'"
+                  confirm="¿Confirmar la transferencia? Se generará el asiento contable."/>
+          <button name="action_cancel"
+                  type="object"
+                  string="Cancelar"
+                  invisible="state != 'validated'"
+                  confirm="¿Cancelar la transferencia? Se revertirá el asiento contable."/>
+          <button name="action_draft"
+                  type="object"
+                  string="Volver a borrador"
+                  invisible="state != 'cancelled'"/>
+          <field name="state" widget="statusbar"
+                 statusbar_visible="draft,validated"/>
         </header>
         <sheet>
+          <div class="oe_button_box" name="button_box">
+            <button name="action_view_move"
+                    type="object"
+                    class="oe_stat_button"
+                    icon="fa-file-text-o"
+                    invisible="not move_id">
+              <field name="move_id" widget="statinfo" string="Asiento"/>
+            </button>
+          </div>
           <group>
             <group>
-              <field name="date"/>
-              <field name="company_id" readonly="1"/>
-              <field name="currency_id"/>
+              <field name="date" readonly="state != 'draft'"/>
+              <field name="company_id" readonly="1" invisible="1"/>
+              <field name="currency_id" readonly="state != 'draft'"/>
             </group>
             <group>
-	      <field name="journal_id_from"
-		     domain="[('type','in',('cash','bank')),
-			   ('company_id','in', context.get('allowed_company_ids', []))]"/>
-
-	      <field name="journal_id_to"
-		     domain="[('type','in',('cash','bank')),
-			   ('company_id','in', context.get('allowed_company_ids', []))]"/>
-              <field name="amount"/>
+              <field name="journal_id_from"
+                     readonly="state != 'draft'"
+                     domain="[('type', 'in', ('cash', 'bank')),
+                              ('company_id', '=', company_id)]"/>
+              <field name="journal_id_to"
+                     readonly="state != 'draft'"
+                     domain="[('type', 'in', ('cash', 'bank')),
+                              ('company_id', '=', company_id)]"/>
+              <field name="amount" readonly="state != 'draft'"/>
             </group>
           </group>
         </sheet>
+        <chatter/>
       </form>
     </field>
   </record>
 
+  <!-- ==================== ACTION ==================== -->
   <record id="action_cash_transfer" model="ir.actions.act_window">
     <field name="name">Transferencias de Efectivo</field>
     <field name="res_model">cash.transfer</field>
     <field name="view_mode">tree,form</field>
     <field name="context">{}</field>
+    <field name="help" type="html">
+      <p class="o_view_nocontent_smiling_face">
+        Crear una transferencia de efectivo
+      </p>
+      <p>
+        Registrá movimientos de efectivo entre cajas de sucursales y la caja central.
+      </p>
+    </field>
   </record>
 
-  <menuitem id="menu_cash_transfer_root" name="Transferencias"/>
-  <menuitem id="menu_cash_transfer" name="Transferencias de Efectivo"
-            parent="menu_cash_transfer_root" action="action_cash_transfer" sequence="10"/>
+  <!-- ==================== MENÚ (bajo Contabilidad) ==================== -->
+  <menuitem id="menu_cash_transfer"
+            name="Transferencias de Efectivo"
+            parent="account.menu_finance"
+            action="action_cash_transfer"
+            sequence="35"/>
+
 </odoo>

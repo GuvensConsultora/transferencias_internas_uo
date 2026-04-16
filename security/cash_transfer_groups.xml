@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="group_cash_transfer_central" model="res.groups">
+        <field name="name">Operador de Caja Central</field>
+        <field name="comment">Permite transferir efectivo DESDE la caja central hacia las sucursales.
+Sin este grupo el usuario solo puede transferir desde su sucursal hacia Central.</field>
+        <field name="category_id" ref="base.module_category_accounting_accounting"/>
+        <field name="implied_ids" eval="[(4, ref('account.group_account_user'))]"/>
+    </record>
+</odoo>
