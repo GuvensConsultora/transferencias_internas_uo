@@ -92,11 +92,6 @@ class CashTransfer(models.Model):
                 return j
         return Journal.browse(False)
 
-    def _user_is_central_operator(self):
-        return self.env.user.has_group(
-            'transferencias_internas_uo.group_cash_transfer_central'
-        )
-
     # ------------------------------------------------------------------
     #  Defaults y onchange
     # ------------------------------------------------------------------
@@ -139,35 +134,6 @@ class CashTransfer(models.Model):
         )
 
     # ------------------------------------------------------------------
-    #  Validación de dirección (Sucursal→Central / Central→Sucursal)
-    # ------------------------------------------------------------------
-
-    def _check_transfer_direction(self):
-        """Valida que la transferencia respete la lógica de permisos:
-        - Usuario normal: solo puede transferir HACIA Central.
-        - Operador de Caja Central: puede transferir DESDE Central
-          hacia cualquier diario de caja/banco.
-        """
-        self.ensure_one()
-        central = self._get_central_cash_journal(self.company_id)
-        if not central:
-            return
-        is_central_op = self._user_is_central_operator()
-        if is_central_op:
-            if self.journal_id_from != central:
-                raise UserError(_(
-                    'Como operador de Caja Central, el diario de origen '
-                    'debe ser el Diario Central (%s).',
-                    central.name,
-                ))
-        else:
-            if self.journal_id_to != central:
-                raise UserError(_(
-                    'El diario destino debe ser el Diario Central (%s).',
-                    central.name,
-                ))
-
-    # ------------------------------------------------------------------
     #  Validar
     # ------------------------------------------------------------------
 
@@ -184,7 +150,12 @@ class CashTransfer(models.Model):
                     'El diario de origen y destino no pueden ser el mismo.'
                 ))
 
-            rec._check_transfer_direction()
+            central = rec._get_central_cash_journal(rec.company_id)
+            if central and rec.journal_id_to != central:
+                raise UserError(_(
+                    'El diario destino debe ser el Diario Central (%s).',
+                    central.name,
+                ))
 
             acc_from = rec._main_account(rec.journal_id_from)
             acc_to = rec._main_account(rec.journal_id_to)
