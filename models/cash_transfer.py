@@ -43,19 +43,6 @@ class CashTransfer(models.Model):
         'account.move', string='Asiento contable',
         readonly=True, copy=False,
     )
-    user_can_override_journals = fields.Boolean(
-        compute='_compute_user_can_override_journals',
-        string='Puede elegir diarios',
-    )
-
-    @api.depends_context('uid')
-    def _compute_user_can_override_journals(self):
-        has_group = self.env.user.has_group(
-            'transferencias_internas_uo.group_cash_transfer_central'
-        )
-        for rec in self:
-            rec.user_can_override_journals = has_group
-
     # ------------------------------------------------------------------
     #  Helpers Operating Unit
     # ------------------------------------------------------------------

@@ -63,18 +63,31 @@
               <field name="currency_id" readonly="state != 'draft'"/>
             </group>
             <group>
-              <field name="user_can_override_journals" invisible="1"/>
+              <!-- Variante OVERRIDE: usuario con el grupo puede elegir
+                   cualquier cash journal en ambos campos -->
               <field name="journal_id_from"
-                     readonly="not user_can_override_journals or state != 'draft'"
-                     domain="[('type', '=', 'cash'),
-                              ('company_id', '=', company_id)]"
-                     options="{'no_create': True, 'no_open': True}"/>
-              <field name="journal_id_to"
-                     invisible="not user_can_override_journals"
+                     groups="transferencias_internas_uo.group_cash_transfer_central"
                      readonly="state != 'draft'"
                      domain="[('type', '=', 'cash'),
                               ('company_id', '=', company_id)]"
                      options="{'no_create': True, 'no_open': True}"/>
+              <field name="journal_id_to"
+                     groups="transferencias_internas_uo.group_cash_transfer_central"
+                     readonly="state != 'draft'"
+                     domain="[('type', '=', 'cash'),
+                              ('company_id', '=', company_id)]"
+                     options="{'no_create': True, 'no_open': True}"/>
+
+              <!-- Variante por defecto: sin el grupo, Desde readonly
+                   (OU del usuario) y Hacia no se muestra (Central) -->
+              <field name="journal_id_from"
+                     groups="!transferencias_internas_uo.group_cash_transfer_central"
+                     readonly="1"
+                     options="{'no_create': True, 'no_open': True}"/>
+              <field name="journal_id_to"
+                     groups="!transferencias_internas_uo.group_cash_transfer_central"
+                     invisible="1"/>
+
               <field name="amount" readonly="state != 'draft'"/>
             </group>
           </group>
