@@ -43,34 +43,6 @@ class CashTransfer(models.Model):
         'account.move', string='Asiento contable',
         readonly=True, copy=False,
     )
-    allowed_journal_from_ids = fields.Many2many(
-        'account.journal',
-        compute='_compute_allowed_journals',
-        string='Diarios de origen permitidos',
-    )
-    allowed_journal_to_ids = fields.Many2many(
-        'account.journal',
-        compute='_compute_allowed_journals',
-        string='Diarios de destino permitidos',
-    )
-
-    @api.depends('company_id')
-    def _compute_allowed_journals(self):
-        Journal = self.env['account.journal']
-        for rec in self:
-            company = rec.company_id or self.env.company
-            user_ou = rec._get_user_default_ou()
-            if user_ou:
-                from_domain = [
-                    ('type', '=', 'cash'),
-                    ('company_id', '=', company.id),
-                    ('operating_unit_id', '=', user_ou.id),
-                ]
-                rec.allowed_journal_from_ids = Journal.search(from_domain)
-            else:
-                rec.allowed_journal_from_ids = Journal.browse()
-            rec.allowed_journal_to_ids = rec._get_central_cash_journal(company)
-
     # ------------------------------------------------------------------
     #  Helpers Operating Unit
     # ------------------------------------------------------------------
@@ -94,6 +66,20 @@ class CashTransfer(models.Model):
     @api.model
     def _get_central_cash_journal(self, company):
         Journal = self.env['account.journal']
+        flagged = Journal.search([
+            ('is_central_cash_journal', '=', True),
+            ('type', '=', 'cash'),
+            ('company_id', '=', company.id),
+        ], limit=1)
+        if flagged:
+            return flagged
+        by_code = Journal.search([
+            ('code', '=', 'CSH00'),
+            ('type', '=', 'cash'),
+            ('company_id', '=', company.id),
+        ], limit=1)
+        if by_code:
+            return by_code
         ICP = self.env['ir.config_parameter'].sudo()
         central_id = int(
             ICP.get_param('cash_transfer.central_journal_id', default='0') or 0

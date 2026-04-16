@@ -9,6 +9,7 @@
     'data': [
         'security/cash_transfer_groups.xml',
         'security/ir.model.access.csv',
+        'views/account_journal_views.xml',
         'views/cash_transfer_views.xml',
     ],
     'installable': True,

@@ -63,16 +63,9 @@
               <field name="currency_id" readonly="state != 'draft'"/>
             </group>
             <group>
-              <field name="allowed_journal_from_ids" invisible="1"/>
-              <field name="allowed_journal_to_ids" invisible="1"/>
-              <field name="journal_id_from"
-                     readonly="state != 'draft'"
-                     domain="[('id', 'in', allowed_journal_from_ids)]"
+              <field name="journal_id_from" readonly="1"
                      options="{'no_create': True, 'no_open': True}"/>
-              <field name="journal_id_to"
-                     readonly="state != 'draft'"
-                     domain="[('id', 'in', allowed_journal_to_ids)]"
-                     options="{'no_create': True, 'no_open': True}"/>
+              <field name="journal_id_to" invisible="1"/>
               <field name="amount" readonly="state != 'draft'"/>
             </group>
           </group>
