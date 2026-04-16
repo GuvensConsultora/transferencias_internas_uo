@@ -63,9 +63,18 @@
               <field name="currency_id" readonly="state != 'draft'"/>
             </group>
             <group>
-              <field name="journal_id_from" readonly="1"
+              <field name="user_can_override_journals" invisible="1"/>
+              <field name="journal_id_from"
+                     readonly="not user_can_override_journals or state != 'draft'"
+                     domain="[('type', '=', 'cash'),
+                              ('company_id', '=', company_id)]"
                      options="{'no_create': True, 'no_open': True}"/>
-              <field name="journal_id_to" invisible="1"/>
+              <field name="journal_id_to"
+                     invisible="not user_can_override_journals"
+                     readonly="state != 'draft'"
+                     domain="[('type', '=', 'cash'),
+                              ('company_id', '=', company_id)]"
+                     options="{'no_create': True, 'no_open': True}"/>
               <field name="amount" readonly="state != 'draft'"/>
             </group>
           </group>

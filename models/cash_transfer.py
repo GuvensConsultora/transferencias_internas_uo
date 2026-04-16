@@ -43,6 +43,19 @@ class CashTransfer(models.Model):
         'account.move', string='Asiento contable',
         readonly=True, copy=False,
     )
+    user_can_override_journals = fields.Boolean(
+        compute='_compute_user_can_override_journals',
+        string='Puede elegir diarios',
+    )
+
+    @api.depends_context('uid')
+    def _compute_user_can_override_journals(self):
+        has_group = self.env.user.has_group(
+            'transferencias_internas_uo.group_cash_transfer_central'
+        )
+        for rec in self:
+            rec.user_can_override_journals = has_group
+
     # ------------------------------------------------------------------
     #  Helpers Operating Unit
     # ------------------------------------------------------------------
@@ -163,12 +176,16 @@ class CashTransfer(models.Model):
                     'El diario de origen y destino no pueden ser el mismo.'
                 ))
 
-            central = rec._get_central_cash_journal(rec.company_id)
-            if central and rec.journal_id_to != central:
-                raise UserError(_(
-                    'El diario destino debe ser el Diario Central (%s).',
-                    central.name,
-                ))
+            is_override = self.env.user.has_group(
+                'transferencias_internas_uo.group_cash_transfer_central'
+            )
+            if not is_override:
+                central = rec._get_central_cash_journal(rec.company_id)
+                if central and rec.journal_id_to != central:
+                    raise UserError(_(
+                        'El diario destino debe ser el Diario Central (%s).',
+                        central.name,
+                    ))
 
             acc_from = rec._main_account(rec.journal_id_from)
             acc_to = rec._main_account(rec.journal_id_to)
